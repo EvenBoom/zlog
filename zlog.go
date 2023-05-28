@@ -48,18 +48,16 @@ var panicLogger struct {
 
 // Default 不会打印日志到标准输出
 func Default() {
-	now := time.Now()
-	dateTime = now.Format("2006/01/02 15:04:05")
-	dateFile = now.Format("20060102.log")
-	initInfo()
-	initWarn()
-	initError()
-	initPanic()
+	initZlog()
 }
 
 // Debug 打印日志到标准输出
 func Debug() {
 	debug = true
+	initZlog()
+}
+
+func initZlog() {
 	now := time.Now()
 	dateTime = now.Format("2006/01/02 15:04:05")
 	dateFile = now.Format("20060102.log")
