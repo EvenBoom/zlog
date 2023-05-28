@@ -221,146 +221,154 @@ func initPanic() {
 
 // Info 信息
 func Info(msg string) {
+	// 异步
+	go func() {
+		infoLogger.l.Lock()
 
-	infoLogger.l.Lock()
-
-	buf := bytes.Buffer{}
-	buf.WriteString("[INFO] ")
-	buf.WriteString(dateTime)
-	buf.WriteByte(' ')
-	buf.WriteString(msg)
-	buf.WriteByte('\n')
-
-	for i := 1; ; i++ {
-		pc, file, line, ok := runtime.Caller(i)
-		buf.WriteString("[LINE] ")
-		buf.WriteString(file)
-		buf.WriteByte(':')
-		b := make([]byte, 0, 9)
-		for line > 0 {
-			b = append(b, digitals[line%10])
-			line = line / 10
-		}
-
-		for i := len(b) - 1; i >= 0; i-- {
-			buf.WriteByte(b[i])
-		}
-
+		buf := bytes.Buffer{}
+		buf.WriteString("[INFO] ")
+		buf.WriteString(dateTime)
+		buf.WriteByte(' ')
+		buf.WriteString(msg)
 		buf.WriteByte('\n')
-		if runtime.FuncForPC(pc).Name() == "main.main" || !ok {
-			break
+
+		for i := 1; ; i++ {
+			_, file, line, ok := runtime.Caller(i)
+			buf.WriteString("[LINE] ")
+			buf.WriteString(file)
+			buf.WriteByte(':')
+			b := make([]byte, 0, 9)
+			for line > 0 {
+				b = append(b, digitals[line%10])
+				line = line / 10
+			}
+
+			for i := len(b) - 1; i >= 0; i-- {
+				buf.WriteByte(b[i])
+			}
+
+			buf.WriteByte('\n')
+			if !ok {
+				break
+			}
 		}
-	}
-	infoLogger.w.Write(buf.Bytes())
-	infoLogger.l.Unlock()
+		infoLogger.w.Write(buf.Bytes())
+		infoLogger.l.Unlock()
+	}()
 
 }
 
 // Warn 警告
 func Warn(msg string) {
+	// 异步
+	go func() {
+		warnLogger.l.Lock()
 
-	warnLogger.l.Lock()
-
-	buf := bytes.Buffer{}
-	buf.WriteString("[WARN] ")
-	buf.WriteString(dateTime)
-	buf.WriteByte(' ')
-	buf.WriteString(msg)
-	buf.WriteByte('\n')
-
-	for i := 1; ; i++ {
-		pc, file, line, ok := runtime.Caller(i)
-		buf.WriteString("[LINE] ")
-		buf.WriteString(file)
-		buf.WriteByte(':')
-		b := make([]byte, 0, 9)
-		for line > 0 {
-			b = append(b, digitals[line%10])
-			line = line / 10
-		}
-
-		for i := len(b) - 1; i >= 0; i-- {
-			buf.WriteByte(b[i])
-		}
-
+		buf := bytes.Buffer{}
+		buf.WriteString("[WARN] ")
+		buf.WriteString(dateTime)
+		buf.WriteByte(' ')
+		buf.WriteString(msg)
 		buf.WriteByte('\n')
-		if runtime.FuncForPC(pc).Name() == "main.main" || !ok {
-			break
+
+		for i := 1; ; i++ {
+			_, file, line, ok := runtime.Caller(i)
+			buf.WriteString("[LINE] ")
+			buf.WriteString(file)
+			buf.WriteByte(':')
+			b := make([]byte, 0, 9)
+			for line > 0 {
+				b = append(b, digitals[line%10])
+				line = line / 10
+			}
+
+			for i := len(b) - 1; i >= 0; i-- {
+				buf.WriteByte(b[i])
+			}
+
+			buf.WriteByte('\n')
+			if !ok {
+				break
+			}
 		}
-	}
-	warnLogger.w.Write(buf.Bytes())
-	warnLogger.l.Unlock()
+		warnLogger.w.Write(buf.Bytes())
+		warnLogger.l.Unlock()
+	}()
 }
 
 // Error 错误
 func Error(msg string) {
+	// 异步
+	go func() {
+		errorLogger.l.Lock()
 
-	errorLogger.l.Lock()
-
-	buf := bytes.Buffer{}
-	buf.WriteString("[EROR] ")
-	buf.WriteString(dateTime)
-	buf.WriteByte(' ')
-	buf.WriteString(msg)
-	buf.WriteByte('\n')
-
-	for i := 1; ; i++ {
-		pc, file, line, ok := runtime.Caller(i)
-		buf.WriteString("[LINE] ")
-		buf.WriteString(file)
-		buf.WriteByte(':')
-		b := make([]byte, 0, 9)
-		for line > 0 {
-			b = append(b, digitals[line%10])
-			line = line / 10
-		}
-
-		for i := len(b) - 1; i >= 0; i-- {
-			buf.WriteByte(b[i])
-		}
-
+		buf := bytes.Buffer{}
+		buf.WriteString("[EROR] ")
+		buf.WriteString(dateTime)
+		buf.WriteByte(' ')
+		buf.WriteString(msg)
 		buf.WriteByte('\n')
-		if runtime.FuncForPC(pc).Name() == "main.main" || !ok {
-			break
+
+		for i := 1; ; i++ {
+			_, file, line, ok := runtime.Caller(i)
+			buf.WriteString("[LINE] ")
+			buf.WriteString(file)
+			buf.WriteByte(':')
+			b := make([]byte, 0, 9)
+			for line > 0 {
+				b = append(b, digitals[line%10])
+				line = line / 10
+			}
+
+			for i := len(b) - 1; i >= 0; i-- {
+				buf.WriteByte(b[i])
+			}
+
+			buf.WriteByte('\n')
+			if !ok {
+				break
+			}
 		}
-	}
-	errorLogger.w.Write(buf.Bytes())
-	errorLogger.l.Unlock()
+		errorLogger.w.Write(buf.Bytes())
+		errorLogger.l.Unlock()
+	}()
 }
 
 // Panic 恐慌
 func Panic(msg string) {
+	// 异步
+	go func() {
+		panicLogger.l.Lock()
 
-	panicLogger.l.Lock()
-
-	buf := bytes.Buffer{}
-	buf.WriteString("[PANC] ")
-	buf.WriteString(dateTime)
-	buf.WriteByte(' ')
-	buf.WriteString(msg)
-	buf.WriteByte('\n')
-
-	for i := 1; ; i++ {
-		pc, file, line, ok := runtime.Caller(i)
-		buf.WriteString("[LINE] ")
-		buf.WriteString(file)
-		buf.WriteByte(':')
-		b := make([]byte, 0, 9)
-		for line > 0 {
-			b = append(b, digitals[line%10])
-			line = line / 10
-		}
-
-		for i := len(b) - 1; i >= 0; i-- {
-			buf.WriteByte(b[i])
-		}
-
+		buf := bytes.Buffer{}
+		buf.WriteString("[PANC] ")
+		buf.WriteString(dateTime)
+		buf.WriteByte(' ')
+		buf.WriteString(msg)
 		buf.WriteByte('\n')
-		if runtime.FuncForPC(pc).Name() == "main.main" || !ok {
-			break
+
+		for i := 1; ; i++ {
+			_, file, line, ok := runtime.Caller(i)
+			buf.WriteString("[LINE] ")
+			buf.WriteString(file)
+			buf.WriteByte(':')
+			b := make([]byte, 0, 9)
+			for line > 0 {
+				b = append(b, digitals[line%10])
+				line = line / 10
+			}
+
+			for i := len(b) - 1; i >= 0; i-- {
+				buf.WriteByte(b[i])
+			}
+
+			buf.WriteByte('\n')
+			if !ok {
+				break
+			}
 		}
-	}
-	panicLogger.w.Write(buf.Bytes())
-	panicLogger.l.Unlock()
-	panic(msg)
+		panicLogger.w.Write(buf.Bytes())
+		panicLogger.l.Unlock()
+		panic(msg)
+	}()
 }
