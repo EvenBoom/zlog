@@ -10,14 +10,19 @@ import (
 )
 
 var debug = false
-var dateFile = ""
-var dateTime = ""
 var logPath = "./log"
 var appPath = logPath + "/app/"
 var infoPath = logPath + "/info/"
 var warnPath = logPath + "/warn/"
 var errorPath = logPath + "/error/"
 var panicPath = logPath + "/panic/"
+
+// 当前时间
+var curTime struct {
+	dateFile string
+	dateTime string
+	l        sync.RWMutex
+}
 
 // SetPath 设置路径
 func SetPath(path string) {
@@ -28,22 +33,18 @@ var digitals = [...]byte{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'}
 
 var infoLogger struct {
 	w io.Writer
-	l sync.Mutex
 }
 
 var warnLogger struct {
 	w io.Writer
-	l sync.Mutex
 }
 
 var errorLogger struct {
 	w io.Writer
-	l sync.Mutex
 }
 
 var panicLogger struct {
 	w io.Writer
-	l sync.Mutex
 }
 
 // Default 不会打印日志到标准输出
@@ -59,8 +60,8 @@ func Debug() {
 
 func initZlog() {
 	now := time.Now()
-	dateTime = now.Format("2006/01/02 15:04:05")
-	dateFile = now.Format("20060102.log")
+	curTime.dateTime = now.Format("2006/01/02 15:04:05")
+	curTime.dateFile = now.Format("20060102.log")
 	initDir()
 	initInfo()
 	initWarn()
@@ -72,32 +73,33 @@ func initZlog() {
 func logTimer() {
 	ticker := time.NewTicker(time.Second)
 	for t := range ticker.C {
-		dateTime = t.Format("2006/01/02 15:04:05")
+		curTime.l.Lock()
+		curTime.dateTime = t.Format("2006/01/02 15:04:05")
 		d := t.Format("20060102.log")
-		if dateFile != d {
-			dateFile = d
+		if curTime.dateFile != d {
+			curTime.dateFile = d
 
-			appOut, err := os.OpenFile(appPath+dateFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+			appOut, err := os.OpenFile(appPath+curTime.dateFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 			if err != nil {
 				panic(err)
 			}
 
-			infoOut, err := os.OpenFile(infoPath+dateFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+			infoOut, err := os.OpenFile(infoPath+curTime.dateFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 			if err != nil {
 				panic(err)
 			}
 
-			warnOut, err := os.OpenFile(warnPath+dateFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+			warnOut, err := os.OpenFile(warnPath+curTime.dateFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 			if err != nil {
 				panic(err)
 			}
 
-			errorOut, err := os.OpenFile(errorPath+dateFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+			errorOut, err := os.OpenFile(errorPath+curTime.dateFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 			if err != nil {
 				panic(err)
 			}
 
-			panicOut, err := os.OpenFile(panicPath+dateFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+			panicOut, err := os.OpenFile(panicPath+curTime.dateFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 			if err != nil {
 				panic(err)
 			}
@@ -115,6 +117,7 @@ func logTimer() {
 			}
 
 		}
+		curTime.l.Unlock()
 	}
 }
 
@@ -145,12 +148,12 @@ func initDir() {
 
 func initInfo() {
 
-	appOut, err := os.OpenFile(appPath+dateFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	appOut, err := os.OpenFile(appPath+curTime.dateFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		panic(err)
 	}
 
-	out, err := os.OpenFile(infoPath+dateFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	out, err := os.OpenFile(infoPath+curTime.dateFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		panic(err)
 	}
@@ -164,12 +167,12 @@ func initInfo() {
 
 func initWarn() {
 
-	appOut, err := os.OpenFile(appPath+dateFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	appOut, err := os.OpenFile(appPath+curTime.dateFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		panic(err)
 	}
 
-	out, err := os.OpenFile(warnPath+dateFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	out, err := os.OpenFile(warnPath+curTime.dateFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		panic(err)
 	}
@@ -183,12 +186,12 @@ func initWarn() {
 
 func initError() {
 
-	appOut, err := os.OpenFile(appPath+dateFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	appOut, err := os.OpenFile(appPath+curTime.dateFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		panic(err)
 	}
 
-	out, err := os.OpenFile(errorPath+dateFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	out, err := os.OpenFile(errorPath+curTime.dateFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		panic(err)
 	}
@@ -202,12 +205,12 @@ func initError() {
 
 func initPanic() {
 
-	appOut, err := os.OpenFile(appPath+dateFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	appOut, err := os.OpenFile(appPath+curTime.dateFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		panic(err)
 	}
 
-	out, err := os.OpenFile(panicPath+dateFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	out, err := os.OpenFile(panicPath+curTime.dateFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		panic(err)
 	}
@@ -221,29 +224,36 @@ func initPanic() {
 
 // Info 信息
 func Info(msg string) {
+
+	curTime.l.RLock()
+	dateTime := curTime.dateTime
+	w := infoLogger.w
+	curTime.l.RUnlock()
+
+	var callers []logCaller
+	for i := 1; ; i++ {
+		_, file, line, ok := runtime.Caller(i)
+		if !ok {
+			break
+		}
+		callers = append(callers, logCaller{file: file, line: line})
+	}
 	// 异步
 	go func() {
-		infoLogger.l.Lock()
-
 		buf := bytes.Buffer{}
 		buf.WriteString("[INFO] ")
 		buf.WriteString(dateTime)
 		buf.WriteByte(' ')
 		buf.WriteString(msg)
 		buf.WriteByte('\n')
-
-		for i := 1; ; i++ {
-			_, file, line, ok := runtime.Caller(i)
-			if !ok {
-				break
-			}
+		for _, caller := range callers {
 			buf.WriteString("[LINE] ")
-			buf.WriteString(file)
+			buf.WriteString(caller.file)
 			buf.WriteByte(':')
 			b := make([]byte, 0, 9)
-			for line > 0 {
-				b = append(b, digitals[line%10])
-				line = line / 10
+			for caller.line > 0 {
+				b = append(b, digitals[caller.line%10])
+				caller.line = caller.line / 10
 			}
 
 			for i := len(b) - 1; i >= 0; i-- {
@@ -252,37 +262,43 @@ func Info(msg string) {
 
 			buf.WriteByte('\n')
 		}
-		infoLogger.w.Write(buf.Bytes())
-		infoLogger.l.Unlock()
+		w.Write(buf.Bytes())
 	}()
 
 }
 
 // Warn 警告
 func Warn(msg string) {
+
+	curTime.l.RLock()
+	dateTime := curTime.dateTime
+	w := warnLogger.w
+	curTime.l.RUnlock()
+
+	var callers []logCaller
+	for i := 1; ; i++ {
+		_, file, line, ok := runtime.Caller(i)
+		if !ok {
+			break
+		}
+		callers = append(callers, logCaller{file: file, line: line})
+	}
 	// 异步
 	go func() {
-		warnLogger.l.Lock()
-
 		buf := bytes.Buffer{}
 		buf.WriteString("[WARN] ")
 		buf.WriteString(dateTime)
 		buf.WriteByte(' ')
 		buf.WriteString(msg)
 		buf.WriteByte('\n')
-
-		for i := 1; ; i++ {
-			_, file, line, ok := runtime.Caller(i)
-			if !ok {
-				break
-			}
+		for _, caller := range callers {
 			buf.WriteString("[LINE] ")
-			buf.WriteString(file)
+			buf.WriteString(caller.file)
 			buf.WriteByte(':')
 			b := make([]byte, 0, 9)
-			for line > 0 {
-				b = append(b, digitals[line%10])
-				line = line / 10
+			for caller.line > 0 {
+				b = append(b, digitals[caller.line%10])
+				caller.line = caller.line / 10
 			}
 
 			for i := len(b) - 1; i >= 0; i-- {
@@ -291,36 +307,43 @@ func Warn(msg string) {
 
 			buf.WriteByte('\n')
 		}
-		warnLogger.w.Write(buf.Bytes())
-		warnLogger.l.Unlock()
+
+		w.Write(buf.Bytes())
 	}()
 }
 
 // Error 错误
 func Error(msg string) {
+
+	curTime.l.RLock()
+	dateTime := curTime.dateTime
+	w := errorLogger.w
+	curTime.l.RUnlock()
+
+	var callers []logCaller
+	for i := 1; ; i++ {
+		_, file, line, ok := runtime.Caller(i)
+		if !ok {
+			break
+		}
+		callers = append(callers, logCaller{file: file, line: line})
+	}
 	// 异步
 	go func() {
-		errorLogger.l.Lock()
-
 		buf := bytes.Buffer{}
 		buf.WriteString("[EROR] ")
 		buf.WriteString(dateTime)
 		buf.WriteByte(' ')
 		buf.WriteString(msg)
 		buf.WriteByte('\n')
-
-		for i := 1; ; i++ {
-			_, file, line, ok := runtime.Caller(i)
-			if !ok {
-				break
-			}
+		for _, caller := range callers {
 			buf.WriteString("[LINE] ")
-			buf.WriteString(file)
+			buf.WriteString(caller.file)
 			buf.WriteByte(':')
 			b := make([]byte, 0, 9)
-			for line > 0 {
-				b = append(b, digitals[line%10])
-				line = line / 10
+			for caller.line > 0 {
+				b = append(b, digitals[caller.line%10])
+				caller.line = caller.line / 10
 			}
 
 			for i := len(b) - 1; i >= 0; i-- {
@@ -329,36 +352,42 @@ func Error(msg string) {
 
 			buf.WriteByte('\n')
 		}
-		errorLogger.w.Write(buf.Bytes())
-		errorLogger.l.Unlock()
+		w.Write(buf.Bytes())
 	}()
 }
 
 // Panic 恐慌
 func Panic(msg string) {
+
+	curTime.l.RLock()
+	dateTime := curTime.dateTime
+	w := panicLogger.w
+	curTime.l.RUnlock()
+
+	var callers []logCaller
+	for i := 1; ; i++ {
+		_, file, line, ok := runtime.Caller(i)
+		if !ok {
+			break
+		}
+		callers = append(callers, logCaller{file: file, line: line})
+	}
 	// 异步
 	go func() {
-		panicLogger.l.Lock()
-
 		buf := bytes.Buffer{}
 		buf.WriteString("[PANC] ")
 		buf.WriteString(dateTime)
 		buf.WriteByte(' ')
 		buf.WriteString(msg)
 		buf.WriteByte('\n')
-
-		for i := 1; ; i++ {
-			_, file, line, ok := runtime.Caller(i)
-			if !ok {
-				break
-			}
+		for _, caller := range callers {
 			buf.WriteString("[LINE] ")
-			buf.WriteString(file)
+			buf.WriteString(caller.file)
 			buf.WriteByte(':')
 			b := make([]byte, 0, 9)
-			for line > 0 {
-				b = append(b, digitals[line%10])
-				line = line / 10
+			for caller.line > 0 {
+				b = append(b, digitals[caller.line%10])
+				caller.line = caller.line / 10
 			}
 
 			for i := len(b) - 1; i >= 0; i-- {
@@ -367,8 +396,13 @@ func Panic(msg string) {
 
 			buf.WriteByte('\n')
 		}
-		panicLogger.w.Write(buf.Bytes())
-		panicLogger.l.Unlock()
+		w.Write(buf.Bytes())
 		panic(msg)
 	}()
+}
+
+// 日志调用函数
+type logCaller struct {
+	file string
+	line int
 }
