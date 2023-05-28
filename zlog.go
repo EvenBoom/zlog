@@ -234,6 +234,9 @@ func Info(msg string) {
 
 		for i := 1; ; i++ {
 			_, file, line, ok := runtime.Caller(i)
+			if !ok {
+				break
+			}
 			buf.WriteString("[LINE] ")
 			buf.WriteString(file)
 			buf.WriteByte(':')
@@ -248,9 +251,6 @@ func Info(msg string) {
 			}
 
 			buf.WriteByte('\n')
-			if !ok {
-				break
-			}
 		}
 		infoLogger.w.Write(buf.Bytes())
 		infoLogger.l.Unlock()
@@ -273,6 +273,9 @@ func Warn(msg string) {
 
 		for i := 1; ; i++ {
 			_, file, line, ok := runtime.Caller(i)
+			if !ok {
+				break
+			}
 			buf.WriteString("[LINE] ")
 			buf.WriteString(file)
 			buf.WriteByte(':')
@@ -287,9 +290,6 @@ func Warn(msg string) {
 			}
 
 			buf.WriteByte('\n')
-			if !ok {
-				break
-			}
 		}
 		warnLogger.w.Write(buf.Bytes())
 		warnLogger.l.Unlock()
@@ -311,6 +311,9 @@ func Error(msg string) {
 
 		for i := 1; ; i++ {
 			_, file, line, ok := runtime.Caller(i)
+			if !ok {
+				break
+			}
 			buf.WriteString("[LINE] ")
 			buf.WriteString(file)
 			buf.WriteByte(':')
@@ -325,9 +328,6 @@ func Error(msg string) {
 			}
 
 			buf.WriteByte('\n')
-			if !ok {
-				break
-			}
 		}
 		errorLogger.w.Write(buf.Bytes())
 		errorLogger.l.Unlock()
@@ -349,6 +349,9 @@ func Panic(msg string) {
 
 		for i := 1; ; i++ {
 			_, file, line, ok := runtime.Caller(i)
+			if !ok {
+				break
+			}
 			buf.WriteString("[LINE] ")
 			buf.WriteString(file)
 			buf.WriteByte(':')
@@ -363,9 +366,6 @@ func Panic(msg string) {
 			}
 
 			buf.WriteByte('\n')
-			if !ok {
-				break
-			}
 		}
 		panicLogger.w.Write(buf.Bytes())
 		panicLogger.l.Unlock()
